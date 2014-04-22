@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using NLog;
 using PacManDuel.Models;
 
 namespace PacManDuel.Services

@@ -27,7 +27,7 @@ namespace PacManDuel.Models
 
         public void Run(String folderPath)
         {
-            var gamePlayDirectoryPath = Properties.Settings.Default.SettingPrimaryDriveName + "\\" + folderPath;
+            var gamePlayDirectoryPath = System.Environment.CurrentDirectory + "\\" + folderPath;
             Directory.CreateDirectory(gamePlayDirectoryPath);
             var outputFilePath = gamePlayDirectoryPath + "\\" + Properties.Settings.Default.SettingGamePlayFile;
             _maze.WriteMaze(outputFilePath);

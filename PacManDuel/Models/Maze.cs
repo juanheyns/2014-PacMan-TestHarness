@@ -3,7 +3,6 @@ using System.Drawing;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using NLog;
 using PacManDuel.Exceptions;
 using PacManDuel.Shared;
 

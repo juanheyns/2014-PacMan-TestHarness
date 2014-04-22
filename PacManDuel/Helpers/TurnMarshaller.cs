@@ -1,5 +1,4 @@
 ﻿using System.Drawing;
-using NLog;
 using PacManDuel.Models;
 using PacManDuel.Shared;
 

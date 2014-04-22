@@ -186,15 +186,6 @@ namespace PacManDuel.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:")]
-        public string SettingPrimaryDriveName {
-            get {
-                return ((string)(this["SettingPrimaryDriveName"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("replay")]
         public string SettingReplayFolder {
             get {
