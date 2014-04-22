@@ -39,8 +39,8 @@ namespace PacManDuel.Models
                 StartInfo =
                 {
                     WorkingDirectory = _workingPath,
-                    FileName = _executableFileName,
-                    Arguments = "\"" + outputFilePath + "\"",
+                    FileName = "mono",
+                    Arguments = _executableFileName + " \"" + outputFilePath + "\"",
                     CreateNoWindow = true,
                     WindowStyle = ProcessWindowStyle.Hidden
                 }
