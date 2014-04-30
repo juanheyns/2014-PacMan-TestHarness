@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Specialized;
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using PacManDuel.Exceptions;
 
@@ -39,19 +37,28 @@ namespace PacManDuel.Models
                 StartInfo =
                 {
                     WorkingDirectory = _workingPath,
-                    FileName = "mono",
-                    Arguments = _executableFileName + " \"" + outputFilePath + "\"",
+                    FileName = _workingPath + "\\" + _executableFileName,
+                    Arguments = "\"" + outputFilePath + "\"" + " >> botlogs_capture.txt 2>&1",
                     CreateNoWindow = true,
                     WindowStyle = ProcessWindowStyle.Hidden
                 }
             };
+
             p.Start();
+            try {
+                startTime = p.StartTime; // Adjust for actual start time of process
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
             var attemptFetchingMaze = true;
             while (attemptFetchingMaze)
             {
                 if (File.Exists(playerOutputFilePath))
                 {
-                    if(!p.HasExited) p.Kill();
+                    Thread.Sleep(50); // Allow file write to complete, otherwise might get permission exception or corrupt file
+                    if (!p.HasExited) p.Kill();
                     try
                     {
                         var mazeFromPlayer = new Maze(playerOutputFilePath);
@@ -97,6 +104,11 @@ namespace PacManDuel.Models
         public String GetPlayerName()
         {
             return _playerName;
+        }
+
+        public String GetPlayerPath()
+        {
+            return _workingPath;
         }
 
         public Point GetCurrentPosition()
