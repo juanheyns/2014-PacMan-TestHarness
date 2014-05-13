@@ -54,8 +54,8 @@ namespace PacManDuel
 
             var games = new List<GameResult>();
 
-            var playerA = new Player("botB", playerBPath, playerBBot, 'B');
-            var playerB = new Player("botA", playerAPath, playerABot, 'A');
+            var playerA = new Player("botA", playerAPath, playerABot, 'A');
+            var playerB = new Player("botB", playerBPath, playerBBot, 'B');
             var game = new Game(playerA, playerB, Properties.Settings.Default.SettingInitialMazeFilePath);
             var result = game.Run("Match_" + DateTime.UtcNow.ToString("yyyy-MM-dd_hh-mm-ss"));
             games.Add(result);
@@ -93,6 +93,9 @@ namespace PacManDuel
             Console.WriteLine("{0,10}  {1,10}", playerATotal, playerBTotal);
             Console.WriteLine();
             Console.WriteLine("* = Moved first");
+            Console.WriteLine();
+            Console.Write("Points diference: ");
+            Console.Error.WriteLine(playerATotal - playerBTotal);
         }
 
         private static void ShowArguments(string[] args)
