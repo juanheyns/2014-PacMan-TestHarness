@@ -50,7 +50,7 @@ namespace PacManDuel.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                Console.Error.WriteLine(ex.ToString());
             }
             var attemptFetchingMaze = true;
             while (attemptFetchingMaze)
@@ -66,7 +66,7 @@ namespace PacManDuel.Models
                     }
                     catch (UnreadableMazeException e)
                     {
-                        Console.WriteLine(e.ToString());
+                        Console.Error.WriteLine(e.ToString());
                         logFile.WriteLine("[GAME] : Unreadable maze from player " + _playerName);
                     }
                 }

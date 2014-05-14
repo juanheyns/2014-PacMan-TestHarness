@@ -101,11 +101,6 @@ namespace PacManDuel.Models
             }
         }
 
-        public void Print()
-        {
-            Console.Out.WriteLine(ToFlatFormatString());
-        }
-
         public Point FindCoordinateOf(char symbol)
         {
             for (var x = 0; x < Properties.Settings.Default.MazeHeight; x++)

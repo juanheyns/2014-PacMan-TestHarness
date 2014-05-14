@@ -8,13 +8,13 @@ namespace PacManDuel.Exceptions
         public UnreadableMazeException(string message) 
             : base(message)
         {
-            Console.WriteLine(message);
+            Console.Error.WriteLine(message);
         }
 
         public UnreadableMazeException(string message, Exception inner)
             : base(message, inner)
         {
-            Console.WriteLine(inner.Message);
+            Console.Error.WriteLine(inner.Message);
         }
 
     }
