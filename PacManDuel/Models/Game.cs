@@ -62,12 +62,19 @@ namespace PacManDuel.Models
                     _maze.WriteMaze(gamePlayDirectoryPath + System.IO.Path.DirectorySeparatorChar + Properties.Settings.Default.SettingGamePlayFile);
                     CreateIterationStateFile(folderPath);
                     _iteration++;
-                    foreach (var player in _playerPool.GetPlayers())
+                    if (PacManDuel.Program.silent) 
                     {
-                        Console.Write(player.GetSymbol() + "," + player.GetPlayerName() + ": " + player.GetScore() + "  ");
+                        Console.Error.Write(".");
                     }
-                    Console.WriteLine();
-                    _maze.Print();
+                    else
+                    {
+                        foreach (var player in _playerPool.GetPlayers())
+                        {
+                            Console.Write(player.GetSymbol() + "," + player.GetPlayerName() + ": " + player.GetScore() + "  ");
+                        }
+                        Console.WriteLine();
+                        Console.WriteLine(_maze.ToFlatFormatString());
+                    }
                 }
                 else gameOutcome = ProcessIllegalMove(logFile, gameOutcome, ref winner);
             }
@@ -77,6 +84,11 @@ namespace PacManDuel.Models
             var replayMatchOutcome = new StreamWriter(folderPath + System.IO.Path.DirectorySeparatorChar + "replay" + System.IO.Path.DirectorySeparatorChar + "matchinfo.out");
             CreateMatchInfo(gameOutcome, winner, replayMatchOutcome);
             replayMatchOutcome.Close();
+            
+            if (PacManDuel.Program.silent) 
+            {
+                Console.Error.WriteLine();
+            }
 
             return new GameResult()
             {
