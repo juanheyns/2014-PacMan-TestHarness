@@ -10,6 +10,38 @@ namespace PacManDuel.Helpers
         {
             currentPlayer.SetCurrentPosition(currentPosition);
 
+            if (IsMoveMadeAndDroppedPoisonPill(currentMaze, previousPosition))
+            {
+                if (!currentPlayer.IsAllowedPoisonPillDrop())
+                    return Enums.TurnOutcome.MoveMadeAndDroppedPoisonPillIllegally;
+
+                currentPlayer.UsePoisonPill();
+                if (IsMoveMadeAndScoredPoint(previousMaze, currentPosition))
+                {
+                    currentPlayer.AddToScore(Properties.Settings.Default.SettingPointsPerPill);
+                    return Enums.TurnOutcome.MoveMadePointScoredAndDroppedPoisonPill;
+                }
+
+                if (IsMoveMadeAndScoredBonusPoint(previousMaze, currentPosition))
+                {
+                    currentPlayer.AddToScore(Properties.Settings.Default.SettingPointsPerBonusPill);
+                    return Enums.TurnOutcome.MoveMadeBonusPointScoredAndDroppedPoisonPill;
+                }
+
+                if (IsMoveMadeAndDiedFromPoisonPill(previousMaze, currentPosition)) 
+                {
+                    currentMaze.SetSymbol(currentPosition.X, currentPosition.Y, Symbols.SYMBOL_EMPTY);
+                    currentMaze.SetSymbol(Properties.Settings.Default.MazeCenterX, Properties.Settings.Default.MazeCenterY, Symbols.SYMBOL_PLAYER_A);
+                    return Enums.TurnOutcome.MoveMadeDroppedPoisonPillAndDiedFromPoisonPill;
+                }
+                if (IsMoveMadeAndKilledOpponent(currentPosition, opponentPosition))
+                {
+                    currentMaze.SetSymbol(Properties.Settings.Default.MazeCenterX, Properties.Settings.Default.MazeCenterY, Symbols.SYMBOL_PLAYER_B);
+                    return Enums.TurnOutcome.MoveMadeDroppedPoisonPillAndKilledOpponent;
+                }
+                return Enums.TurnOutcome.MoveMadeAndDroppedPoisonPill;
+            }
+
             if (IsMoveMadeAndScoredPoint(previousMaze, currentPosition))
             {
                 currentPlayer.AddToScore(Properties.Settings.Default.SettingPointsPerPill);
@@ -33,15 +65,6 @@ namespace PacManDuel.Helpers
             {
                 currentMaze.SetSymbol(Properties.Settings.Default.MazeCenterX, Properties.Settings.Default.MazeCenterY, Symbols.SYMBOL_PLAYER_B);
                 return Enums.TurnOutcome.MoveMadeAndKilledOpponent;
-            }
-
-            if (IsMoveMadeAndDroppedPoisonPill(currentMaze, previousPosition))
-            {
-                if (!currentPlayer.IsAllowedPoisonPillDrop())
-                    return Enums.TurnOutcome.MoveMadeAndDroppedPoisonPillIllegally;
-
-                currentPlayer.UsePoisonPill();
-                return Enums.TurnOutcome.MoveMadeAndDroppedPoisonPill;
             }
 
             return (int)Enums.TurnOutcome.MoveMade;
@@ -71,7 +94,6 @@ namespace PacManDuel.Helpers
         private static bool IsMoveMadeAndDroppedPoisonPill(Maze currentMaze, Point previousPosition)
         {
             return currentMaze.GetSymbol(previousPosition.X, previousPosition.Y) == Symbols.SYMBOL_POISON_PILL;
-        }
-
+        }       
     }
 }

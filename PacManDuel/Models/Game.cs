@@ -20,7 +20,7 @@ namespace PacManDuel.Models
             _playerPool = new PlayerPool(playerA, playerB);
             _maze = new Maze(pathToInitialMaze);
             _gameMarshaller = new GameMarshaller();
-            _iteration = 1;
+            _iteration = 0;
             _secondMazePlayer = 'A';
         }
 
@@ -35,7 +35,9 @@ namespace PacManDuel.Models
             Directory.CreateDirectory(folderPath);
             Directory.CreateDirectory(folderPath + System.IO.Path.DirectorySeparatorChar + Properties.Settings.Default.SettingReplayFolder);
             var logFile = new StreamWriter(folderPath + System.IO.Path.DirectorySeparatorChar + Properties.Settings.Default.SettingMatchLogFileName);
+            CreateIterationStateFile(folderPath);
             logFile.WriteLine("[GAME] : Match started");
+            _iteration++;
             while (gameOutcome == Enums.GameOutcome.ProceedToNextRound)
             {
                 _currentPlayer = _playerPool.GetNextPlayer();
@@ -58,9 +60,9 @@ namespace PacManDuel.Models
                         else gameOutcome = ProcessIllegalMove(logFile, gameOutcome, ref winner);
                     }
                     else gameOutcome = ProcessIllegalMove(logFile, gameOutcome, ref winner);
-                    
+
                     _maze.WriteMaze(gamePlayDirectoryPath + System.IO.Path.DirectorySeparatorChar + Properties.Settings.Default.SettingGamePlayFile);
-                    CreateIterationStateFile(folderPath);
+                    Maze iterationFileMaze = CreateIterationStateFile(folderPath);
                     _iteration++;
                     if (PacManDuel.Program.silent) 
                     {
@@ -75,6 +77,8 @@ namespace PacManDuel.Models
                         Console.WriteLine();
                         Console.WriteLine(_maze.ToFlatFormatString());
                     }
+                    Console.WriteLine();
+                    iterationFileMaze.Print();
                 }
                 else gameOutcome = ProcessIllegalMove(logFile, gameOutcome, ref winner);
             }
@@ -111,17 +115,12 @@ namespace PacManDuel.Models
         {
             mazeFromPlayer.SwapPlayerSymbols();
             _maze = mazeFromPlayer;
-            if (gameOutcome != Enums.GameOutcome.ProceedToNextRound)
+            if (_maze.FindCoordinateOf(_secondMazePlayer).IsEmpty)
             {
-                if (gameOutcome == Enums.GameOutcome.NoScoringMaxed)
-                {
-                    winner = _playerPool.GetNextPlayer();
-                }
-                else
-                {
-                    winner = GameJudge.DetermineWinner(_playerPool);
-                }
+                _maze.SetSymbol(Properties.Settings.Default.MazeCenterX, Properties.Settings.Default.MazeCenterY, _secondMazePlayer);
             }
+            if (gameOutcome != Enums.GameOutcome.ProceedToNextRound)
+                winner = GameJudge.DetermineWinner(_playerPool, gameOutcome);
             return winner;
         }
 
@@ -154,16 +153,17 @@ namespace PacManDuel.Models
         }
 
 
-        private void CreateIterationStateFile(String folderPath)
+        private Maze CreateIterationStateFile(String folderPath)
         {
             var replayFile =
                 new StreamWriter(folderPath + System.IO.Path.DirectorySeparatorChar + Properties.Settings.Default.SettingReplayFolder + System.IO.Path.DirectorySeparatorChar + "iteration" +
                                  _iteration + Properties.Settings.Default.SettingStateFileExtension);
             var mazeForFile = new Maze(_maze);
-            if (_secondMazePlayer == _currentPlayer.GetSymbol())
+            if ((_currentPlayer == null)||(_secondMazePlayer == _currentPlayer.GetSymbol()))
                 mazeForFile.SwapPlayerSymbols();
             replayFile.Write(mazeForFile.ToFlatFormatString());
             replayFile.Close();
+            return mazeForFile;
         }
 
         private void CreateMatchInfo(Enums.GameOutcome gameOutcome, Player winner, StreamWriter file)

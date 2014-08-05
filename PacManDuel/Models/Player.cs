@@ -31,14 +31,23 @@ namespace PacManDuel.Models
         {
             var playerOutputFilePath = _workingPath + System.IO.Path.DirectorySeparatorChar + Properties.Settings.Default.SettingBotOutputFileName;
             File.Delete(playerOutputFilePath);
-            var startTime = DateTime.Now;
+
+            var processName = _workingPath + System.IO.Path.DirectorySeparatorChar + _executableFileName;
+            var arguments = "\"" + outputFilePath + "\"";
+
+            if (Environment.OSVersion.Platform == PlatformID.Unix)
+            {
+                arguments = processName + " " + arguments;
+                processName = "/bin/bash";
+            }
+            
             var p = new Process
             {
                 StartInfo =
                 {
                     WorkingDirectory = _workingPath,
-                    FileName = _workingPath + System.IO.Path.DirectorySeparatorChar + _executableFileName,
-                    Arguments = "\"" + outputFilePath + "\"",
+                    FileName = processName,
+                    Arguments = arguments,
                     CreateNoWindow = true,
                     WindowStyle = ProcessWindowStyle.Hidden,
                     UseShellExecute = false,
@@ -47,49 +56,46 @@ namespace PacManDuel.Models
                 }
             };
 
-            p.Start();
             System.Diagnostics.DataReceivedEventHandler h = (sender, args) => {
-                using (System.IO.StreamWriter file = new System.IO.StreamWriter(_workingPath + System.IO.Path.DirectorySeparatorChar + "botlogs_capture.txt", true))
+                if (!String.IsNullOrEmpty(args.Data)) 
                 {
-                    file.Write(args.Data);
+                    using (System.IO.StreamWriter file = new System.IO.StreamWriter(_workingPath + System.IO.Path.DirectorySeparatorChar + "botlogs_capture.txt", true))
+                    {
+                        file.WriteLine(args.Data);
+                    }
                 }
             };
             p.OutputDataReceived  += h;
             p.ErrorDataReceived  += h;
+            p.Start();
             p.BeginOutputReadLine();
             p.BeginErrorReadLine();
-            try {
-                startTime = p.StartTime; // Adjust for actual start time of process
-            }
-            catch (Exception ex)
+            bool didExit = p.WaitForExit(Properties.Settings.Default.SettingBotOutputTimeoutSeconds * 1000);
+            if (!didExit)
             {
-                Console.Error.WriteLine(ex.ToString());
+                p.Kill();
+                logFile.WriteLine("[GAME] : Killed process " + processName);
             }
-            var attemptFetchingMaze = true;
-            while (attemptFetchingMaze)
+
+            if (p.ExitCode != 0)
             {
-                if (File.Exists(playerOutputFilePath))
-                {
-                    Thread.Sleep(50); // Allow file write to complete, otherwise might get permission exception or corrupt file
-                    if (!p.HasExited) p.Kill();
-                    try
-                    {
-                        var mazeFromPlayer = new Maze(playerOutputFilePath);
-                        return mazeFromPlayer;
-                    }
-                    catch (UnreadableMazeException e)
-                    {
-                        Console.Error.WriteLine(e.ToString());
-                        logFile.WriteLine("[GAME] : Unreadable maze from player " + _playerName);
-                    }
-                }
-                if ((DateTime.Now - startTime).TotalSeconds > Properties.Settings.Default.SettingBotOutputTimeoutSeconds)
-                {
-                    attemptFetchingMaze = false;
-                    if (!p.HasExited) p.Kill();
-                    logFile.WriteLine("[GAME] : Timeout from player " + _playerName);
-                }
-                Thread.Sleep(100);
+                logFile.WriteLine("[GAME] : Process exited " + p.ExitCode + " from player " + _playerName);
+            }
+
+            if (!File.Exists(playerOutputFilePath)) 
+            {
+                logFile.WriteLine("[GAME] : No output file from player " + _playerName);
+                return null;
+            }
+            try
+            {
+                var mazeFromPlayer = new Maze(playerOutputFilePath);
+                return mazeFromPlayer;
+            }
+            catch (UnreadableMazeException e)
+            {
+                Console.WriteLine(e.ToString());
+                logFile.WriteLine("[GAME] : Unreadable maze from player: " + _playerName);
             }
             return null;
         }
